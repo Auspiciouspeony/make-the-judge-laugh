@@ -15,7 +15,25 @@ OUTPUT_DIR = os.environ.get("MAKEFUN_OUTPUT_DIR", "/output")
 OUTPUT_PATH = os.path.join(OUTPUT_DIR, "entry.txt")
 
 
+def validate(line: str) -> None:
+    """Enforce the competition gate on the final line before writing it.
+
+    Gate (per RULES.txt): UTF-8, 1-200 chars, single line, not only
+    whitespace. Fails loudly instead of ever writing an invalid entry.
+    """
+    if not isinstance(line, str):
+        raise TypeError("entry line must be a str")
+    if not 1 <= len(line) <= 200:
+        raise ValueError(f"entry line must be 1-200 chars, got {len(line)}")
+    if line != line.strip() or not line.strip():
+        raise ValueError("entry line must not be blank or have surrounding whitespace")
+    if "\n" in line or "\r" in line:
+        raise ValueError("entry line must be a single line")
+    line.encode("utf-8")  # raises UnicodeEncodeError if not valid UTF-8
+
+
 def main() -> None:
+    validate(LINE)
     os.makedirs(OUTPUT_DIR, exist_ok=True)
     with open(OUTPUT_PATH, "w", encoding="utf-8", newline="") as f:
         f.write(LINE)
